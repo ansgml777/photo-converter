@@ -1,153 +1,395 @@
-﻿<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-    <title>증명사진 변환기</title>
-    <meta charset="UTF-8">
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .upload-area {
-            border: 2px dashed #ccc;
-            padding: 30px;
-            text-align: center;
-            margin: 20px 0;
-            border-radius: 5px;
-        }
-        .upload-area:hover {
-            border-color: #666;
-        }
-        select, button {
-            padding: 10px 20px;
-            margin: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .result-image {
-            max-width: 100%;
-            margin-top: 20px;
-            border-radius: 5px;
-        }
-        .download-btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-        .download-btn:hover {
-            background-color: #218838;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>증명사진 규격 변환기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: linear-gradient(135deg, #e0e7ff 0%, #fff 100%);
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 32px 28px 24px 28px;
+      margin-top: 48px;
+      max-width: 700px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #3b3b4f;
+      margin-bottom: 12px;
+    }
+    .desc {
+      font-size: 1rem;
+      color: #666;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    label {
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: block;
+      color: #444;
+    }
+    input[type="file"] {
+      margin-bottom: 16px;
+    }
+    select, button {
+      font-size: 1rem;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #bfc4d1;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    button {
+      background: #6366f1;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #4f46e5;
+    }
+    .canvas-wrap {
+      margin: 18px 0 10px 0;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    #resultCanvas {
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      display: block;
+      margin: 0 auto;
+    }
+    #downloadLink {
+      display: inline-block;
+      margin-top: 10px;
+      background: #10b981;
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    #downloadLink:hover {
+      background: #059669;
+    }
+    .spec-table {
+      width: 100%;
+      margin: 18px 0 0 0;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    .spec-table th, .spec-table td {
+      border: 1px solid #e5e7eb;
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .spec-table th {
+      background: #f3f4f6;
+      color: #333;
+    }
+    .spec-table td {
+      background: #fff;
+    }
+    @media (max-width: 500px) {
+      .container { padding: 16px 4px; }
+      h1 { font-size: 1.3rem; }
+      .desc { font-size: 0.95rem; }
+      .spec-table { font-size: 0.85rem; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>증명사진 변환기</h1>
-        <div class="upload-area">
-            <input type="file" id="imageInput" accept="image/*">
-            <br>
-            <select id="photoType">
-                <option value="passport">여권</option>
-                <option value="id">주민등록증</option>
-                <option value="license">운전면허증</option>
-            </select>
-            <button onclick="convertImage()">변환하기</button>
-        </div>
-        <div class="loading">처리중...</div>
-        <div id="result"></div>
+  <div class="container">
+    <h1>증명사진 규격 변환기</h1>
+    <div class="desc">
+      사진을 업로드하고, 원하는 증명사진 종류를 선택한 뒤 <b>변환하기</b>를 눌러주세요.<br>
+      <span style="color:#6366f1;">여권</span>은 얼굴 누끼(배경제거) 후 흰색 배경으로 자동 변환됩니다.<br>
+      <span style="font-size:0.95em; color:#059669;">(모든 작업은 내 컴퓨터에서만 처리되어 안전합니다)</span>
     </div>
-
-    <script>
+    <label for="photoInput">사진 업로드</label>
+    <input type="file" id="photoInput" accept="image/*">
+    <label for="typeSelect">사진 종류 선택</label>
+    <select id="typeSelect">
+      <option value="passport">여권</option>
+      <option value="idcard">주민등록증</option>
+      <option value="license">운전면허증</option>
+    </select>
+    <button onclick="convertPhoto()">변환하기</button>
+    <div id="loadingMsg" style="display:none; color:#6366f1; font-weight:600; margin-bottom:10px;">변환 중입니다... 잠시만 기다려주세요.</div>
+    <div class="canvas-wrap">
+      <canvas id="resultCanvas" width="0" height="0"></canvas>
+    </div>
+    <a id="downloadLink" style="display:none;">다운로드</a>
+    <table class="spec-table">
+      <tr><th>종류</th><th>크기(px)</th><th>용량</th><th>배경</th><th>얼굴 비율</th></tr>
+      <tr><td>여권</td><td>413×531</td><td>500KB 이하</td><td>흰색만</td><td>70~80%</td></tr>
+      <tr><td>주민등록증</td><td>413×531</td><td>500KB 이하</td><td>흰색 권장</td><td>제한 없음</td></tr>
+      <tr><td>운전면허증</td><td>350×450</td><td>250KB 이하</td><td>흰색 등 단일색</td><td>정면</td></tr>
+    </table>
+  </div>
+  <script>
     // face-api.js 모델 로드
     Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/models'),
-        faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/models'),
-        faceapi.nets.faceRecognitionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/models'),
-        faceapi.nets.faceExpressionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/models')
+      faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/models'),
+      faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/models'),
+      faceapi.nets.faceRecognitionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/models'),
+      faceapi.nets.faceExpressionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/models')
     ]).then(start);
 
     async function start() {
-        // 모델 로드 완료
-        console.log('모델 로드 완료');
+      console.log('모델 로드 완료');
     }
 
-    async function convertImage() {
-        const input = document.getElementById('imageInput');
-        const loading = document.querySelector('.loading');
-        const result = document.getElementById('result');
-        
-        if (!input.files[0]) {
-            alert('이미지를 선택해주세요');
-            return;
+    async function convertPhoto() {
+      const fileInput = document.getElementById('photoInput');
+      const type = document.getElementById('typeSelect').value;
+      const canvas = document.getElementById('resultCanvas');
+      const downloadLink = document.getElementById('downloadLink');
+      const loadingMsg = document.getElementById('loadingMsg');
+
+      if (!fileInput.files[0]) {
+        alert('사진을 업로드해주세요.');
+        return;
+      }
+
+      loadingMsg.style.display = 'block';
+      downloadLink.style.display = 'none';
+
+      // 규격 정보
+      const specs = {
+        passport: { w: 413, h: 531, maxSize: 500 * 1024, faceRatio: [0.7, 0.8] },
+        idcard:   { w: 413, h: 531, maxSize: 500 * 1024 },
+        license:  { w: 350, h: 450, maxSize: 250 * 1024 }
+      };
+      const spec = specs[type];
+
+      // 이미지 로드
+      const img = new Image();
+      img.onload = async function() {
+        const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions());
+
+        if (!detection) {
+          alert('얼굴을 인식하지 못했습니다.');
+          loadingMsg.style.display = 'none';
+          return;
         }
 
-        const formData = new FormData();
-        formData.append('image', input.files[0]);
-        formData.append('type', document.getElementById('photoType').value);
+        // 얼굴 중심, 크기 계산
+        const { x, y, width, height } = detection.box;
+        const faceCenterX = x + width / 2;
+        const faceCenterY = y + height / 2;
+        const faceRatio = height / img.height;
 
-        loading.style.display = 'block';
-        result.innerHTML = '';
+        // 얼굴 비율에 더 넉넉한 여유
+        const marginRatio = 0.22;
+        const targetFaceRatio = ((spec.faceRatio[0] + spec.faceRatio[1]) / 2) * (1 - marginRatio);
+        const scale = targetFaceRatio / faceRatio;
+        const crownOffset = height * 0.18;
 
-        try {
-            const response = await fetch('/api/remove_bg', {
-                method: 'POST',
-                body: formData
+        const offsetX = spec.w / 2 - faceCenterX * scale;
+        const offsetY = spec.h / 2 - (faceCenterY - crownOffset) * scale;
+
+        // 캔버스 준비
+        canvas.width = spec.w;
+        canvas.height = spec.h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, spec.w, spec.h);
+
+        if (type === 'passport') {
+          // 여권: mediapipe로 누끼 따기
+          const selfieSegmentation = new SelfieSegmentation({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`});
+          await selfieSegmentation.initialize();
+          selfieSegmentation.setOptions({modelSelection: 1});
+
+          // 전체 이미지를 확대/이동해서 그리기
+          ctx.save();
+          ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
+          ctx.restore();
+
+          // segmentation 처리
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = spec.w;
+          tempCanvas.height = spec.h;
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCtx.drawImage(canvas, 0, 0);
+
+          await new Promise((resolve) => {
+            selfieSegmentation.onResults((results) => {
+              if (results.segmentationMask) {
+                const maskCanvas = document.createElement('canvas');
+                maskCanvas.width = spec.w;
+                maskCanvas.height = spec.h;
+                const maskCtx = maskCanvas.getContext('2d');
+                maskCtx.drawImage(results.segmentationMask, 0, 0, spec.w, spec.h);
+                
+                const maskData = maskCtx.getImageData(0, 0, spec.w, spec.h);
+                const imageData = ctx.getImageData(0, 0, spec.w, spec.h);
+                
+                for (let i = 0; i < maskData.data.length; i += 4) {
+                  const maskAlpha = maskData.data[i] / 255; // 0(배경) ~ 1(사람)
+                  if (maskAlpha > 0.85) {
+                    // 완전히 사람: 원본 유지
+                    continue;
+                  } else if (maskAlpha < 0.35) {
+                    // 거의 배경: 완전 흰색
+                    imageData.data[i] = 255;
+                    imageData.data[i+1] = 255;
+                    imageData.data[i+2] = 255;
+                    imageData.data[i+3] = 255;
+                  } else {
+                    // 경계: feather 폭을 넓혀 부드럽게 섞기
+                    const alpha = (maskAlpha - 0.35) / (0.85 - 0.35); // 0~1로 정규화
+                    imageData.data[i]   = imageData.data[i]   * alpha + 255 * (1 - alpha);
+                    imageData.data[i+1] = imageData.data[i+1] * alpha + 255 * (1 - alpha);
+                    imageData.data[i+2] = imageData.data[i+2] * alpha + 255 * (1 - alpha);
+                    imageData.data[i+3] = 255;
+                  }
+                }
+                ctx.putImageData(imageData, 0, 0);
+              }
+              resolve();
             });
-
-            if (!response.ok) throw new Error('변환 실패');
-
-            const blob = await response.blob();
-            const img = document.createElement('img');
-            img.src = URL.createObjectURL(blob);
-            img.className = 'result-image';
-            result.appendChild(img);
-
-            const downloadBtn = document.createElement('a');
-            downloadBtn.href = img.src;
-            downloadBtn.download = 'converted_image.png';
-            downloadBtn.textContent = '다운로드';
-            downloadBtn.className = 'download-btn';
-            result.appendChild(downloadBtn);
-
-        } catch (error) {
-            alert('오류가 발생했습니다: ' + error.message);
-        } finally {
-            loading.style.display = 'none';
+            selfieSegmentation.send({image: tempCanvas});
+          });
+        } else {
+          // 주민등록증/운전면허증: 원본 이미지 비율 유지, 중앙 정렬, 픽셀만 맞춤 (확대 금지)
+          const scale = Math.min(1, Math.min(spec.w / img.width, spec.h / img.height));
+          const drawWidth = img.width * scale;
+          const drawHeight = img.height * scale;
+          const offsetX = (spec.w - drawWidth) / 2;
+          const offsetY = (spec.h - drawHeight) / 2;
+          
+          // 실제 이미지 영역 감지
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = spec.w;
+          tempCanvas.height = spec.h;
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCtx.fillStyle = '#fff';
+          tempCtx.fillRect(0, 0, spec.w, spec.h);
+          tempCtx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+          
+          const imageData = tempCtx.getImageData(0, 0, spec.w, spec.h);
+          let minX = spec.w, minY = spec.h, maxX = 0, maxY = 0;
+          
+          // 실제 이미지 영역 찾기
+          for (let y = 0; y < spec.h; y++) {
+            for (let x = 0; x < spec.w; x++) {
+              const i = (y * spec.w + x) * 4;
+              // 흰색이 아닌 픽셀 찾기
+              if (imageData.data[i] < 250 || imageData.data[i+1] < 250 || imageData.data[i+2] < 250) {
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+              }
+            }
+          }
+          
+          // 실제 이미지 영역이 있는 경우에만 여백 제거
+          if (minX < maxX && minY < maxY) {
+            const contentWidth = maxX - minX + 1;
+            const contentHeight = maxY - minY + 1;
+            
+            // 새로운 캔버스에 실제 이미지 영역만 그리기
+            const newCanvas = document.createElement('canvas');
+            newCanvas.width = contentWidth;
+            newCanvas.height = contentHeight;
+            const newCtx = newCanvas.getContext('2d');
+            newCtx.drawImage(tempCanvas, minX, minY, contentWidth, contentHeight, 0, 0, contentWidth, contentHeight);
+            
+            // 최종 캔버스에 다시 그리기
+            canvas.width = spec.w;
+            canvas.height = spec.h;
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, spec.w, spec.h);
+            const finalScale = Math.min(1, Math.min(spec.w / contentWidth, spec.h / contentHeight));
+            const finalWidth = contentWidth * finalScale;
+            const finalHeight = contentHeight * finalScale;
+            const finalOffsetX = (spec.w - finalWidth) / 2;
+            const finalOffsetY = (spec.h - finalHeight) / 2;
+            ctx.drawImage(newCanvas, finalOffsetX, finalOffsetY, finalWidth, finalHeight);
+          } else {
+            // 실제 이미지 영역을 찾지 못한 경우 원래대로 그리기
+            ctx.save();
+            ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+            ctx.restore();
+          }
         }
+
+        // JPG로 저장, 용량 제한
+        let quality = 0.92;
+        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+        while (dataUrl.length > spec.maxSize * 1.37 && quality > 0.5) {
+          quality -= 0.05;
+          dataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
+
+        downloadLink.href = dataUrl;
+        downloadLink.download = 'photo.jpg';
+        downloadLink.style.display = 'inline-block';
+        downloadLink.textContent = '다운로드';
+        loadingMsg.style.display = 'none';
+      };
+      img.src = URL.createObjectURL(fileInput.files[0]);
     }
-    </script>
+
+    async function removeBgWithU2Net(file) {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const response = await fetch('https://photo-converter.vercel.app/api/remove_bg', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('배경제거 실패');
+        }
+        const blob = await response.blob();
+        return URL.createObjectURL(blob);
+      } catch (error) {
+        console.error('배경제거 오류:', error);
+        return null;
+      }
+    }
+
+    const input = document.querySelector('input[type=file]');
+    input.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      const resultUrl = await removeBgWithU2Net(file);
+      if (resultUrl) {
+        document.getElementById('resultImg').src = resultUrl;
+      }
+    });
+  </script>
 </body>
 </html>
