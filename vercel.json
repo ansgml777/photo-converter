@@ -1,11 +1,15 @@
-﻿{
+{
     "version": 2,
     "builds": [
-        { "src": "web/index.html", "use": "@vercel/static" },
-        { "src": "web/models/**", "use": "@vercel/static" }
+        {
+            "src": "web/index.html",
+            "use": "@vercel/static"
+        }
     ],
     "routes": [
-        { "src": "/models/(.*)", "dest": "/web/models/$1" },
-        { "src": "/(.*)", "dest": "/web/index.html" }
+        {
+            "src": "/",
+            "dest": "/web/index.html"
+        }
     ]
-}
+} 
