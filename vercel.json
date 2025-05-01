@@ -1,23 +1,11 @@
 ﻿{
-  "version": 2,
-  "builds": [
-    {
-      "src": "u2net_server.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "web/index.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "u2net_server.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/web/index.html"
-    }
-  ]
+    "version": 2,
+    "builds": [
+        { "src": "web/index.html", "use": "@vercel/static" },
+        { "src": "web/models/**", "use": "@vercel/static" }
+    ],
+    "routes": [
+        { "src": "/models/(.*)", "dest": "/web/models/$1" },
+        { "src": "/(.*)", "dest": "/web/index.html" }
+    ]
 }
