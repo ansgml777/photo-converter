@@ -157,10 +157,10 @@
   <script>
     // face-api.js 모델 로드
     Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri('./models'),
-      faceapi.nets.faceLandmark68Net.loadFromUri('./models'),
-      faceapi.nets.faceRecognitionNet.loadFromUri('./models'),
-      faceapi.nets.faceExpressionNet.loadFromUri('./models')
+      faceapi.nets.tinyFaceDetector.loadFromUri('D:/web/models'),
+      faceapi.nets.faceLandmark68Net.loadFromUri('D:/web/models'),
+      faceapi.nets.faceRecognitionNet.loadFromUri('D:/web/models'),
+      faceapi.nets.faceExpressionNet.loadFromUri('D:/web/models')
     ]).then(start);
 
     async function start() {
